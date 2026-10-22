@@ -34,9 +34,20 @@
       : 'Sem internet? Tente de novo pelo botão da notificação. <a href="' + APP + '">Abrir o app</a>';
     if (ok && !silent) setTimeout(function () { location.replace(APP + "#tomei-" + (k === "whey" ? "whey" : "creatina")); }, 700);
   }
+  // prox=HH:MM: ainda falta proteína hoje; agenda no ntfy o aviso da próxima dose de whey
+  function agenda() {
+    var prox = q.get("prox");
+    if (k !== "whey" || !/^\d{2}:\d{2}$/.test(prox || "")) return Promise.resolve();
+    var at = new Date(); at.setHours(+prox.slice(0, 2), +prox.slice(3), 0, 0);
+    if (at <= new Date()) return Promise.resolve();
+    var link = location.origin + location.pathname + "?k=whey&t=" + t;
+    return fetch("https://ntfy.sh/" + t, { method: "POST", body: "Ainda falta proteína hoje. Toque em Tomei quando tomar a próxima dose.",
+      headers: { "Title": "Whey: proxima dose", "Priority": "4", "Tags": "pill", "At": String(Math.floor(at / 1000)), "Click": link, "Actions": "view, Tomei, " + link + ", clear=true" } })
+      .then(function () { document.getElementById("p").insertAdjacentHTML("beforeend", "<br>Próxima dose avisada às " + prox + "."); }, function () {});
+  }
   if (!/^(creatina|whey)$/.test(k || "") || !/^ficha-[a-z0-9]+$/.test(t || "")) fim(false);
   else fetch("https://ntfy.sh/" + t + "-ok", { method: "POST", body: k + "-" + hoje })
-    .then(function (r) { fim(r.ok); }).catch(function () { fim(false); });
+    .then(function (r) { fim(r.ok); return r.ok && agenda(); }).catch(function () { fim(false); });
 </script>
 </body>
 </html>
