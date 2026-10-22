@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Lembretes · Ficha</title>
+<link rel="icon" type="image/svg+xml" href="icon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
+<style>
+  html,body{margin:0;min-height:100%}
+  body{background:#0b0e14;color:#eef0f4;font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;padding:28px max(16px,env(safe-area-inset-right)) 28px max(16px,env(safe-area-inset-left));box-sizing:border-box}
+  main{max-width:420px;margin:0 auto;display:grid;gap:16px}
+  img{width:64px;height:64px;border-radius:16px}
+  h1{margin:0;font-size:24px}
+  p,li{color:#b8beca;margin:0}
+  .card{background:#161b25;border:1px solid #273042;border-radius:14px;padding:14px 16px;display:grid;gap:10px}
+  label{display:grid;grid-template-columns:1fr auto;align-items:center;gap:10px}
+  input{font:inherit;color:#eef0f4;background:#0f141d;border:1px solid #273042;border-radius:10px;padding:8px 10px}
+  a.btn{display:block;text-align:center;background:#2f6bff;color:#fff;text-decoration:none;font-weight:600;padding:14px;border-radius:12px}
+  a.sec{background:none;border:1px solid #273042;color:#eef0f4}
+  ol{margin:0;padding-left:20px;display:grid;gap:6px}
+</style>
+</head>
+<body>
+<main>
+  <img src="icon-180.png" alt="">
+  <h1>Lembretes de suplemento</h1>
+  <p>Cria dois eventos que se repetem todo dia no calendário do seu celular, com alarme. Quando tocar, tome e marque "Tomei" no app.</p>
+  <div class="card">
+    <label>Creatina <input id="c" type="time" value="07:00"></label>
+    <label>Whey <input id="w" type="time" value="13:45"></label>
+    <label>Creatina (g) <input id="cg" type="number" min="1" max="10" value="5" style="width:70px"></label>
+  </div>
+  <a class="btn" id="add" href="#">Adicionar ao calendário</a>
+  <div class="card">
+    <ol>
+      <li><b>iPhone:</b> toque em Adicionar, depois em "Adicionar tudo".</li>
+      <li><b>Android:</b> toque em Adicionar e abra o arquivo baixado com o Google Agenda.</li>
+      <li>Se não abrir, crie à mão no app Lembretes ou Relógio: "Creatina" todo dia no horário acima.</li>
+    </ol>
+  </div>
+  <a class="btn sec" href="./?abrir">Voltar ao app</a>
+</main>
+<script>
+  var q = new URLSearchParams(location.search);
+  ["c", "w", "cg"].forEach(function (k) { if (q.get(k)) document.getElementById(k).value = q.get(k); });
+  var pad = function (n) { return String(n).padStart(2, "0"); };
+  function ics() {
+    var d = new Date(); d.setDate(d.getDate() + 1);
+    var day = d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate());
+    var now = new Date(), stamp = now.getUTCFullYear() + pad(now.getUTCMonth() + 1) + pad(now.getUTCDate()) + "T" + pad(now.getUTCHours()) + pad(now.getUTCMinutes()) + "00Z";
+    var ev = function (id, hhmm, title, desc) {
+      var t = hhmm.replace(":", "") + "00";
+      return ["BEGIN:VEVENT", "UID:ficha-" + id + "@isantodev.github.io", "DTSTAMP:" + stamp, "DTSTART:" + day + "T" + t, "DURATION:PT10M",
+        "RRULE:FREQ=DAILY", "SUMMARY:" + title, "DESCRIPTION:" + desc,
+        "BEGIN:VALARM", "ACTION:DISPLAY", "DESCRIPTION:" + title, "TRIGGER:PT0M", "END:VALARM", "END:VEVENT"].join("\r\n");
+    };
+    var cg = document.getElementById("cg").value || "5";
+    return ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Ficha//Lembretes//PT", "CALSCALE:GREGORIAN",
+      ev("creatina", document.getElementById("c").value || "07:00", "Creatina " + cg + " g", "Tome e marque no app Ficha. Todo dia\\, com ou sem treino."),
+      ev("whey", document.getElementById("w").value || "13:45", "Whey", "Tome e marque no app Ficha."),
+      "END:VCALENDAR", ""].join("\r\n");
+  }
+  document.getElementById("add").addEventListener("click", function (e) {
+    e.preventDefault();
+    var text = ics();
+    if (/iPhone|iPad|iPod/.test(navigator.userAgent)) { location.href = "data:text/calendar;charset=utf-8," + encodeURIComponent(text); return; }
+    var url = URL.createObjectURL(new Blob([text], { type: "text/calendar" })), a = document.createElement("a");
+    a.href = url; a.download = "ficha-lembretes.ics"; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 5000);
+  });
+</script>
+</body>
+</html>
