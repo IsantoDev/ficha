@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Tomei · Ficha</title>
+<link rel="icon" type="image/svg+xml" href="icon.svg">
+<style>
+  html,body{height:100%;margin:0}
+  body{background:#0b0e14;color:#eef0f4;font:17px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;display:grid;place-items:center;padding:24px max(16px,env(safe-area-inset-right)) 24px max(16px,env(safe-area-inset-left));box-sizing:border-box;text-align:center}
+  main{display:grid;gap:14px;justify-items:center;max-width:340px}
+  img{width:72px;height:72px;border-radius:18px}
+  p{margin:0;color:#b8beca}
+  a{color:#7aa7ff}
+</style>
+</head>
+<body>
+<main>
+  <img src="icon-180.png" alt="">
+  <h1 id="h" style="margin:0;font-size:24px">Marcando…</h1>
+  <p id="p"></p>
+</main>
+<script>
+  // Chamada pelo botão "Tomei" da notificação (ou pelo app, com silent=1).
+  // Publica a marca do dia no ntfy para parar os alertas e abre o app com #tomei-<suplemento> para marcar lá também.
+  var APP = "https://claude.ai/artifact/Sqxxds4ZyKWd8BVXizKYzv";
+  var q = new URLSearchParams(location.search), k = q.get("k"), t = q.get("t"), silent = q.get("silent") === "1";
+  var nome = k === "whey" ? "Whey" : "Creatina";
+  var d = new Date(), hoje = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  function fim(ok) {
+    document.getElementById("h").textContent = ok ? nome + " marcada" : "Não consegui parar os alertas";
+    document.getElementById("p").innerHTML = ok
+      ? (silent ? "Alertas de hoje parados. Pode fechar esta aba." : "Alertas de hoje parados. Abrindo o app…")
+      : 'Sem internet? Tente de novo pelo botão da notificação. <a href="' + APP + '">Abrir o app</a>';
+    if (ok && !silent) setTimeout(function () { location.replace(APP + "#tomei-" + (k === "whey" ? "whey" : "creatina")); }, 700);
+  }
+  if (!/^(creatina|whey)$/.test(k || "") || !/^ficha-[a-z0-9]+$/.test(t || "")) fim(false);
+  else fetch("https://ntfy.sh/" + t + "-ok", { method: "POST", body: k + "-" + hoje })
+    .then(function (r) { fim(r.ok); }).catch(function () { fim(false); });
+</script>
+</body>
+</html>
