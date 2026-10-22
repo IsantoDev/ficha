@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Ficha</title>
+<meta name="apple-mobile-web-app-title" content="Ficha">
+<meta name="application-name" content="Ficha">
+<meta name="theme-color" content="#0b0e14">
+<link rel="icon" type="image/svg+xml" href="icon.svg">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
+<link rel="manifest" href="manifest.webmanifest">
+<style>
+  html,body{height:100%;margin:0}
+  body{background:#0b0e14;color:#eef0f4;font:16px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;display:grid;place-items:center;padding:24px max(16px,env(safe-area-inset-right)) 24px max(16px,env(safe-area-inset-left));box-sizing:border-box}
+  main{max-width:360px;display:grid;gap:18px;justify-items:center;text-align:center}
+  img{width:112px;height:112px;border-radius:26px;box-shadow:0 10px 40px rgba(47,107,255,.25)}
+  h1{margin:0;font-size:28px;letter-spacing:.04em}
+  p{margin:0;color:#98a0ae}
+  a.btn{display:inline-block;background:#2f6bff;color:#fff;text-decoration:none;font-weight:600;padding:13px 22px;border-radius:12px}
+  ol{margin:0;padding-left:20px;text-align:left;color:#c9ced8}
+  [hidden]{display:none!important}
+</style>
+</head>
+<body>
+<main>
+  <img src="icon-512.png" alt="Logo da Ficha">
+  <h1>FICHA</h1>
+  <p id="going" hidden>Abrindo seu treino…</p>
+  <section id="setup" hidden>
+    <p style="margin-bottom:12px">Adicione este atalho à tela inicial. Depois, tocando no ícone, você cai direto no seu treino.</p>
+    <ol>
+      <li><b>iPhone:</b> botão Compartilhar → Adicionar à Tela de Início.</li>
+      <li><b>Android:</b> menu ⋮ → Adicionar à tela inicial.</li>
+    </ol>
+  </section>
+  <a class="btn" id="open" href="https://claude.ai/artifact/Sqxxds4ZyKWd8BVXizKYzv">Abrir treino</a>
+</main>
+<script>
+  // 1ª visita: mostra como instalar (sem redirecionar, para dar tempo de adicionar à tela inicial).
+  // Visitas seguintes (pelo ícone): vai direto para o app.
+  var APP = "https://claude.ai/artifact/Sqxxds4ZyKWd8BVXizKYzv", seen = false;
+  try { seen = localStorage.getItem("ficha-instalado") === "1"; localStorage.setItem("ficha-instalado", "1"); } catch (e) {}
+  if (seen || /[?&]abrir/.test(location.search)) { document.getElementById("going").hidden = false; location.replace(APP); }
+  else document.getElementById("setup").hidden = false;
+</script>
+</body>
+</html>
